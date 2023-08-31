@@ -7,7 +7,6 @@ import {
   TotpValidateOptions,
 } from "../interfaces";
 import { generateConfig } from "../index";
-import { DEFAULT_TOTP_PERIOD } from "../utils/constants";
 import { ValidationError } from "../utils/validation-error";
 import { GenerateKey } from "./generate-key";
 
@@ -20,8 +19,9 @@ export class TimeBased {
     options: TotpCode,
     config: ValidTotpConfig
   ): string[] {
-    const epoch = Math.floor(Date.now() / 1000);
-    const counter = Math.floor(epoch / DEFAULT_TOTP_PERIOD);
+    const validatedConfig = generateConfig(config);
+    const epoch = Math.floor(Date.now() / 1e3);
+    const counter = Math.floor(epoch / validatedConfig.period);
 
     const counters = [counter];
     if (options.drift && options.drift > 0) {
@@ -41,7 +41,7 @@ export class TimeBased {
             secret: options.secret,
             counter: counters[i],
           },
-          config
+          validatedConfig
         )
       );
     }
